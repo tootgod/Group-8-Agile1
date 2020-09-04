@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "BullCowCartridge.h"
+#include "HiddenWordList.h"
 
 void UBullCowCartridge::BeginPlay() // When the game starts
 {
@@ -12,7 +13,6 @@ void UBullCowCartridge::BeginPlay() // When the game starts
 
 void UBullCowCartridge::OnInput(const FString& Input) // When the player hits enter
 {
-
     HiddenWord.Len();
 
     if (bGameOver)
@@ -20,13 +20,12 @@ void UBullCowCartridge::OnInput(const FString& Input) // When the player hits en
         ClearScreen();
         SetupGame();
     }
-
     else //Check PlayerGuess
     {
         ProcessGuess(Input);
-    }
-    
+    }  
 }
+
 void UBullCowCartridge::SetupGame()
 {
      // Welcoming Our Player
@@ -41,6 +40,7 @@ void UBullCowCartridge::SetupGame()
     PrintLine(TEXT("Type in your guess and \npress enter to continue...")); // Prompt Player for Guess
 
     const TCHAR HW[] = TEXT("cakes");
+
 }
 
 void UBullCowCartridge::EndGame()
@@ -72,9 +72,9 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
     }
 
     // Remove Life
-        --Lives;
-        PrintLine(TEXT("You have lost a life!"));
-    // Check if Lives > 0
+    --Lives;
+    PrintLine(TEXT("You have lost a life!"));
+
     if(Lives <= 0)
     {
         ClearScreen();
@@ -83,17 +83,25 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
         EndGame();
         return;
     }
+
     //Shows the player the number of bulls and cows
     PrintLine(TEXT("Guess again, you have %i lives left."), Lives);
 }
 
-bool UBullCowCartridge::IsIsogram(FString Word){
+bool UBullCowCartridge::IsIsogram(FString Word) const
+{
 
-    // for each letter
-    // Start at element[0]
-    // Compare against the next letter
-    // Until we reach [guess.Len() - 1]
-    // if any are the same return false
-
+    for (int32 Index = 0; ; Index < Word.Len(); Index++)
+    {
+        for (int32 Comparison = Index + 1; Comparison < Word.Len(); Comparison++)
+        {
+            if (Word[Index] == Word[Comparison])
+            {
+                return false;
+            }           
+        }  
+    }
+    
     return true;
+
 }
