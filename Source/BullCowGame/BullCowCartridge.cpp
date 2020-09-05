@@ -21,6 +21,16 @@ void UBullCowCartridge::OnInput(const FString& Input) // When the player hits en
         SetupGame();
     }
 
+    else if(Input.IsNumeric())
+    {
+        int32 newInput = FCString::Atoi(*Input);
+        if(newInput == 1)
+        {
+            NumberOfHints ++;
+            PlayerHint(NumberOfHints);
+        }
+        return;
+    }
     else //Check PlayerGuess
     {
         ProcessGuess(Input);
@@ -49,6 +59,7 @@ void UBullCowCartridge::SetupGame()
     HiddenWord = TEXT("cakes");
     Lives = HiddenWord.Len();
     bGameOver = false; 
+    NumberOfHints = 0;
 
     PrintLine(TEXT("Guess the %i letter word!"), HiddenWord.Len());
     PrintLine(TEXT("You have %i Lives."), Lives);
@@ -85,4 +96,67 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
                 EndGame();
             }
         }
+            PrintLine(TEXT("The hidden word is %i letters long."), HiddenWord.Len());
+            PrintLine(TEXT("Sorry, try guessing again! \nYou have %i lives remaingin!"), Lives);
+            return;
+        }
+
+    if (!IsIsogram(Guess))
+    {
+        PrintLine(TEXT ("No repeating letters, guess again.\n"));
+        return;
+    }
+
+    // Remove Life
+    --Lives;
+    PrintLine(TEXT("You have lost a life!"));
+
+    if(Lives <= 0)
+    {
+        ClearScreen();
+        PrintLine(TEXT("You have no lives left!"));
+        PrintLine(TEXT("The hidden word was %s.\n"), *HiddenWord);
+        EndGame();
+        return;
+    }
+
+    //Shows the player the number of bulls and cows
+    PrintLine(TEXT("Guess again, you have %i lives left."), Lives);
+}
+
+bool UBullCowCartridge::IsIsogram(FString Word) const
+{
+
+    for (int32 Index = 0; Index < Word.Len(); Index++)
+    {
+        for (int32 Comparison = Index + 1; Comparison < Word.Len(); Comparison++)
+        {
+            if (Word[Index] == Word[Comparison])
+            {
+                return false;
+            }           
+        }  
+    }
+    
+    return true;
+
+}
+
+void UBullCowCartridge::PlayerHint(int32 NumberOfHints)
+{
+    if(NumberOfHints > 0)
+    {
+        PrintLine(TEXT("The first %i letters of the hidden word are: "), NumberOfHints);
+        for (int32 i = 0; i < NumberOfHints; i++)
+        {
+            PrintLine(TEXT("%s"), HiddenWord[i]);
+        }
+        PrintLine(TEXT("\n"));
+        return;
+    }
+
+    else
+    {
+        return;
+    }
 }
