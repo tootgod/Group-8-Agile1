@@ -14,12 +14,43 @@ void UBullCowCartridge::BeginPlay() // When the game starts
 
 void UBullCowCartridge::OnInput(const FString& PlayerInput) // When the player hits enter
 {
+
     HiddenWord.Len();
 
     if (bGameOver)
     {
         ClearScreen();
         SetupGame();
+    }
+    else if (PlayerInput.IsNumeric())
+    {
+        int32 newInput = FCString::Atoi(*PlayerInput);;
+        if((newInput == 1) && (Lives > 1))
+        {
+            NumberOfHints ++;
+            --Lives;
+            PlayerHint(NumberOfHints);
+        }
+        else if (newInput == 2)
+        {
+            PlayerHint(NumberOfHints);
+        }
+        else if ((newInput == 1) && (Lives <= 1))
+        {
+            PrintLine(TEXT("Sorry, you do not have enough lives\nto get a hint."));
+            PrintLine(TEXT("Please enter your final guess."));
+            PrintLine(TEXT("Or press 2 to see your hints."));
+            return;
+        }
+        else
+        {
+            PrintLine(TEXT("Sorry, that was not a valid input.\nPlease press 1 for a hint."));
+            if (NumberOfHints >= 1)
+            {  
+                PrintLine(TEXT("Press 2 to see your hints."));
+            }
+            PrintLine(TEXT("Or type in a guess."));
+        }
     }
     else //Check PlayerGuess
     {
@@ -35,6 +66,7 @@ void UBullCowCartridge::SetupGame()
     HiddenWord = Isograms[FMath::RandRange(0, Isograms.Num() - 1)];
     Lives = HiddenWord.Len();
     bGameOver = false; 
+    NumberOfHints = 0;
 
     PrintLine(TEXT("Guess the %i letter word!"), HiddenWord.Len());
     PrintLine(TEXT("The HiddenWord is: %s."), *HiddenWord); // Debug Line
@@ -60,7 +92,6 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
             EndGame();
             return;
         }
-
     if (Guess.Len() != HiddenWord.Len())
         {
             PrintLine(TEXT("The hidden word is %i letters long."), HiddenWord.Len());
@@ -92,7 +123,16 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess)
 
     PrintLine(TEXT("You have %i Bulls and %i Cows"), Score.Bulls, Score.Cows);
 
-    PrintLine(TEXT("Guess again, you have %i lives left."), Lives);
+    PrintLine(TEXT("You have %i lives left."), Lives);
+
+    PrintLine(TEXT("You can press 1 to get a hint."));
+    
+    if(NumberOfHints > 1)
+    {
+        PrintLine(TEXT("You can press 2 to see your hints."));
+    }
+
+    PrintLine(TEXT("Or you can guess again."));
 }
 
 bool UBullCowCartridge::IsIsogram(const FString& Word) const
@@ -149,4 +189,22 @@ FBullCowCount UBullCowCartridge::GetBullCows(const FString& Guess) const
     }
     return Count;
 
+}
+
+void UBullCowCartridge::PlayerHint(int32 NumberOfHints)
+{
+
+    if(NumberOfHints > 0)
+    {
+        FString HintString = HiddenWord.Mid(0, NumberOfHints);
+        PrintLine(TEXT("The first %i letters of the \nhidden word are: %s"), NumberOfHints, *HintString);
+        PrintLine(TEXT("You have %i lives remaining.\nPlease type in your next guess."), Lives);
+        if (Lives > 1)
+        {
+            PrintLine(TEXT("Or press 1 for another hint."));
+        }
+        return;
+    }
+
+    return;
 }
